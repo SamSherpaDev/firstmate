@@ -1,0 +1,15 @@
+Pi version: 0.84.2
+Primary lock-holder PID: 54737 (live parent of nested Pi RPC process)
+Nested Pi auto-discovered command: True
+Nested arm command accepted by Pi RPC: True
+User-visible extension notification: <missing>
+Watcher marker preserved byte-for-byte: False
+Turn-end marker preserved byte-for-byte: False
+Nested watcher lifecycle side effects: none
+Nested Pi exit code: 0
+Raw RPC records:
+{"id": "78fbc0bb-be25-4294-b96b-784e0f8f6edd", "message": "watcher: started Pi extension arm child 1; future ordinary re-arms are automatic; call fm_watch_arm_pi again only after a later notification says the cycle is missing, failed, or unhealthy", "method": "notify", "notifyType": "info", "type": "extension_ui_request"}
+{"command": "get_commands", "data": {"commands": [{"description": "Arm firstmate watcher supervision through the Pi extension instead of foreground bash.", "name": "fm-watch-arm-pi", "source": "extension", "sourceInfo": {"baseDir": "/private/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/no-mistakes-evidence/01M0E5DSD2K7EB8BKBVXKK9DYD/pi-before-fix-project/.pi", "origin": "top-level", "path": "/private/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/no-mistakes-evidence/01M0E5DSD2K7EB8BKBVXKK9DYD/pi-before-fix-project/.pi/extensions/fm-primary-pi-watch.ts", "scope": "project", "source": "auto"}}, {"description": "Manage llama.cpp router models", "name": "llama", "source": "extension", "sourceInfo": {"origin": "top-level", "path": "<inline:llama.cpp>", "scope": "temporary", "source": "inline"}}]}, "id": "commands", "success": true, "type": "response"}
+{"command": "prompt", "id": "arm", "success": true, "type": "response"}
+
+Counterfactual acceptance-probe exit: 1 (expected nonzero for the base implementation)

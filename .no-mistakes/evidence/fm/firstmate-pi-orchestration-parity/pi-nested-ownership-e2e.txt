@@ -1,0 +1,9 @@
+Pi version: 0.84.2
+Primary lock-holder PID: 54727 (live parent of nested Pi RPC process)
+Nested Pi auto-discovered command: True
+Nested arm command accepted by Pi RPC: True
+User-visible extension notification: watcher: read-only - session lock is held by another firstmate session
+Watcher marker preserved byte-for-byte: True
+Turn-end marker preserved byte-for-byte: True
+Nested watcher lifecycle side effects: none
+Nested Pi exit code: 0
