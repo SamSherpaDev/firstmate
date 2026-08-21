@@ -1,0 +1,27 @@
+Live Pi quota footer verification
+Pi version: 0.84.2
+Harness: actual pi executable in a 260x40 pseudo-terminal
+Discovery: project .pi/extensions auto-discovery
+Credentials: isolated synthetic account token; PI_OFFLINE=1
+quota-axi calls: --json --full --provider codex|
+quota-axi stdin observations: eof|
+Result: PASS - Pi built-in cwd/git, model, and context footer content remained visible; unrelated extension status remained visible; all fresh Codex quota windows, resets, plan, and zero credits rendered in a separate row; Ctrl-D exited cleanly.
+
+Final reconstructed terminal screen:
+ pi v0.84.2
+ escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash · ctrl+o more
+ Press ctrl+o to show full startup help and loaded resources.
+
+ Pi can explain its own features and look up its docs. Ask it how to use or extend Pi.
+
+[Extensions]
+  aaa-unrelated-status.ts, fm-pi-quota-status.ts
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Quota Codex (plan pro) | week 94% left reset 6d | GPT-5.3-Codex-Spark session 100% left reset 5h | GPT-5.3-Codex-Spark week 100% left reset 6d | credits 0
+/private/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/no-mistakes-evidence/01M0FYKG66HZC1HY4870205B1Y/.live-pi-lab.13668/project (quota-live)
+$0.000 (sub) 0.0%/128k (auto)                                                                                                                                                                                                           gpt-5.3-codex-spark • medium
+LIVE_UNRELATED_STATUS

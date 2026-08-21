@@ -1,0 +1,29 @@
+Live Pi quota footer verification
+Pi version: 0.84.2
+Harness: actual pi executable in a 72x40 pseudo-terminal
+Discovery: project .pi/extensions auto-discovery
+Credentials: isolated synthetic account token; PI_OFFLINE=1
+quota-axi calls: --json --full --provider codex|
+quota-axi stdin observations: eof|
+Result: PASS - Pi built-in cwd/git, model, and context footer content remained visible; unrelated extension status remained visible; the quota row degraded explicitly to a narrow 3-window summary without presenting a partial list; Ctrl-D exited cleanly.
+
+Final reconstructed terminal screen:
+ pi v0.84.2
+ escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash ·
+ ctrl+o more
+ Press ctrl+o to show full startup help and loaded resources.
+
+ Pi can explain its own features and look up its docs. Ask it how to
+ use or extend Pi.
+
+[Extensions]
+  aaa-unrelated-status.ts, fm-pi-quota-status.ts
+
+
+────────────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────────────
+Quota Codex: narrow - 3 windows; widen for details
+/private/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/no-mistakes-...
+$0.000 (sub) 0.0%/128k (auto)               gpt-5.3-codex-spark • medium
+LIVE_UNRELATED_STATUS
