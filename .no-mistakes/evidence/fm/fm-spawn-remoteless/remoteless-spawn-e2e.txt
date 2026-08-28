@@ -1,0 +1,47 @@
+=== Remote-less fixture before fallback ===
+authoritative project remotes: <none>
+task worktree remotes: <none>
+stale task HEAD: c3ea7ca8959d70cb335e483e6c1251686d2c7362
+current local main: 005339d157737fa8284afbe715e19ad9424598ee
+=== Scout spawn ===
+spawned evidence-scout-r1 harness=codex kind=scout window=firstmate:fm-evidence-scout-r1 worktree=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/task-worktree
+task HEAD after scout: 005339d157737fa8284afbe715e19ad9424598ee
+local-main content in task: current local default
+scout persisted contract:
+worktree=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/task-worktree
+project=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/fm-remoteless-evidence.nry2pv/project
+kind=scout
+=== Local-only ship spawn ===
+spawned evidence-ship-r1 harness=codex kind=ship mode=local-only yolo=off window=firstmate:fm-evidence-ship-r1 worktree=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/task-worktree
+task HEAD after ship: 005339d157737fa8284afbe715e19ad9424598ee
+ship persisted contract:
+worktree=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/task-worktree
+project=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/fm-remoteless-evidence.nry2pv/project
+kind=ship
+mode=local-only
+yolo=off
+=== Remote-less local-only promotion ===
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  3 task(s) in flight, but no live watcher process holds this home lock (last beat: 6s ago).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  repair a missing or failed watcher cycle with the Pi tool fm_watch_arm_pi, or restart Pi with -e /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M14TFTPT2NQDQRHKVHFG7RB7/.pi/extensions/fm-primary-turnend-guard.ts -e /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M14TFTPT2NQDQRHKVHFG7RB7/.pi/extensions/fm-primary-pi-watch.ts if the extensions are not loaded.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+promoted evidence-promote-r1 to ship mode=local-only yolo=off (teardown protection restored)
+next: FM_HOME=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/home bin/fm-send.sh fm-evidence-promote-r1 '<ship instructions for mode=local-only: review scratch state with git status and git log; reset to a clean default-branch base; carry over only intended fix changes; create branch fm/evidence-promote-r1; implement; report done>'
+promotion persisted contract:
+worktree=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/task-worktree
+project=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/project
+kind=ship
+mode=local-only
+yolo=off
+=== PR-backed spawn refusal with no origin ===
+exit=1
+error: task worktree '/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/task-worktree' has no origin remote; this lifecycle requires a valid origin; refusing to launch from a potentially stale base
+=== Configured failing-origin scout refusal (no local fallback) ===
+configured remotes:
+origin	file:///var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/missing-origin.git (fetch)
+origin	file:///var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/missing-origin.git (push)
+exit=1
+error: could not fetch origin for task worktree '/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-remoteless-evidence.nry2pv/task-worktree'; refusing to launch from a potentially stale base
