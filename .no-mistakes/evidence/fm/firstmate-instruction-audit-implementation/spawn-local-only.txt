@@ -1,0 +1,2 @@
+notice: contract-local-only ships mode=local-only while the standing posture for project is no-mistakes - less rigor than the captain's standing posture; proceed only on a current explicit captain instruction or an intake judgment you can state
+spawned contract-local-only harness=codex kind=ship mode=local-only yolo=off window=firstmate:fm-contract-local-only worktree=/Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M243S9SCEA24CZQPASDB9PSZ/.test-phase-tmp/fm-instruction-evidence.DMVo8z/local-only/worktree

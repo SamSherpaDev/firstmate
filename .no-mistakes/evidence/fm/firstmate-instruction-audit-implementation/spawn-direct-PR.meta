@@ -1,0 +1,12 @@
+window=firstmate:fm-contract-direct-PR
+endpoint_task_id=contract-direct-PR
+worktree=/Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M243S9SCEA24CZQPASDB9PSZ/.test-phase-tmp/fm-instruction-evidence.DMVo8z/direct-PR/worktree
+project=/Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M243S9SCEA24CZQPASDB9PSZ/.test-phase-tmp/fm-instruction-evidence.DMVo8z/direct-PR/project
+harness=codex
+kind=ship
+mode=direct-PR
+yolo=off
+tasktmp=/tmp/fm-contract-direct-PR
+model=default
+effort=default
+spawn_gen=s1788993457.78031.21992

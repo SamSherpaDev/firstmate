@@ -1,0 +1,2 @@
+notice: contract-direct-PR ships mode=direct-PR while the standing posture for project is no-mistakes - less rigor than the captain's standing posture; proceed only on a current explicit captain instruction or an intake judgment you can state
+spawned contract-direct-PR harness=codex kind=ship mode=direct-PR yolo=off window=firstmate:fm-contract-direct-PR worktree=/Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M243S9SCEA24CZQPASDB9PSZ/.test-phase-tmp/fm-instruction-evidence.DMVo8z/direct-PR/worktree

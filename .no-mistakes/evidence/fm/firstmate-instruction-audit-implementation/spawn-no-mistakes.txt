@@ -1,0 +1,1 @@
+spawned contract-no-mistakes harness=codex kind=ship mode=no-mistakes yolo=off window=firstmate:fm-contract-no-mistakes worktree=/Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M243S9SCEA24CZQPASDB9PSZ/.test-phase-tmp/fm-instruction-evidence.DMVo8z/no-mistakes/worktree

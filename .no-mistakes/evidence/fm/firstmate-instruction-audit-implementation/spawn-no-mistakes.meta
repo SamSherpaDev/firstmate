@@ -1,0 +1,12 @@
+window=firstmate:fm-contract-no-mistakes
+endpoint_task_id=contract-no-mistakes
+worktree=/Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M243S9SCEA24CZQPASDB9PSZ/.test-phase-tmp/fm-instruction-evidence.DMVo8z/no-mistakes/worktree
+project=/Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M243S9SCEA24CZQPASDB9PSZ/.test-phase-tmp/fm-instruction-evidence.DMVo8z/no-mistakes/project
+harness=codex
+kind=ship
+mode=no-mistakes
+yolo=off
+tasktmp=/tmp/fm-contract-no-mistakes
+model=default
+effort=default
+spawn_gen=s1788993451.77238.3065
