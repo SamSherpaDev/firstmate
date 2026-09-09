@@ -153,6 +153,7 @@ For a legacy mixed `# Task`, retain provenance-marked captain words and all acce
 Keep private handoff destinations and worker-control instructions (status reporting, routing, and delivery mechanics) in the brief, not in review intent; offline-test, no-live-effect, access, and other product/engineering safety constraints remain acceptance criteria.
 The `--intent` string must be self-sufficient: resolve referenced reports, decisions, and PRs into their accepted substance so that intent plus the codebase reconstructs the specification.
 Review intent is private acceptance context, not public PR copy: request a few short behavior/proof/material-risk bullets for public prose, with required machine attestation preserved verbatim and separately from that prose.
+Public prose must never include private coordination, local paths, task/session/model/captain attribution, or long test transcripts.
 Never shorten acceptance criteria or machine attestation to shorten a PR; a publisher that cannot maintain this separation needs a reported correction through its supported gate, not an active-run hand edit.
 EOF
 }
@@ -203,6 +204,16 @@ fm_ask_user_escalation_block() {  # <data-dir> <task-id>
    \`needs-decision [key=nm-<run>-<step>]: ask-user findings=<id1>,<id2>,... file=$data/$id/nm-<run>-findings.txt\`
    naming every ask-user finding id from that gate. The status line only points at the file; it never restates or summarizes a finding's content.
 EOF
+}
+
+fm_brief_delivery_overlay() {
+  cat <<'EOF'
+
+# Current ship delivery contract
+The following Definition of done supersedes every earlier brief instruction about delivery, completion status, and when to start validation.
+All other task requirements, safety and authority boundaries, and status protocols remain in force; merge authority is unchanged.
+EOF
+  fm_dod_block "$1" "$2"
 }
 
 fm_dod_block() {  # <mode> <task-id>
