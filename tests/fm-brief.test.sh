@@ -260,7 +260,7 @@ test_ship_mode_is_explicit_not_registry() {
   brief="$home/data/brief-explicit-a5/brief.md"
   grep -qx "Delivery contract: mode=no-mistakes" "$brief" \
     || fail "registered direct-PR posture overrode the explicit --mode"
-  assert_grep "Firstmate will then instruct you to run /no-mistakes" "$brief" \
+  assert_grep "no second start instruction is needed" "$brief" \
     "explicit no-mistakes brief did not render the pipeline definition of done"
 
   # An unregistered project is not a blocker either, because nothing is looked up.
@@ -314,11 +314,11 @@ test_faster_paths_use_configured_authority_without_stacked_review() {
     "local-only brief hard-coded captain-only authority"
   assert_no_grep "Firstmate then reviews your branch diff" "$brief" \
     "local-only brief retained a personal review stacked on the selected delivery path"
-  assert_no_grep "pass \`--intent\` as only this brief's \`## Captain's intent\`" "$home/data/$id/brief.md" \
+  assert_no_grep "preserve every accepted product/engineering requirement" "$home/data/$id/brief.md" \
     "local-only brief must not include the no-mistakes --intent contract"
   id="brief-direct-intent-a4"
   FM_HOME="$home" "$ROOT/bin/fm-brief.sh" "$id" direct-proj --mode direct-PR >/dev/null 2>&1
-  assert_no_grep "pass \`--intent\` as only this brief's \`## Captain's intent\`" "$home/data/$id/brief.md" \
+  assert_no_grep "preserve every accepted product/engineering requirement" "$home/data/$id/brief.md" \
     "direct-PR brief must not include the no-mistakes --intent contract"
   pass "fm-brief.sh: faster paths use configured authority without stacked review"
 }
@@ -341,22 +341,28 @@ test_no_mistakes_dod_wording() {
   # shellcheck disable=SC2016  # single quotes are deliberate: the backticks must stay literal
   assert_grep '`help`' "$brief" \
     "no-mistakes DOD must render literal backticks around help"
-  assert_grep "pass \`--intent\` as only this brief's \`## Captain's intent\`" "$brief" \
-    "no-mistakes DOD must require --intent to be the Captain's intent subsection"
-  assert_grep "plus any later words the captain actually said" "$brief" \
-    "no-mistakes DOD must allow later captain words in --intent"
-  assert_grep "Do not include \`## Firstmate spec\`" "$brief" \
-    "no-mistakes DOD must keep Firstmate spec out of --intent"
-  assert_grep "or your own decisions and tradeoffs" "$brief" \
-    "no-mistakes DOD must keep worker tradeoffs out of --intent"
-  assert_grep "This replaces the no-mistakes skill's advice to enrich \`--intent\`" "$brief" \
-    "no-mistakes DOD must override the external skill's enrich-with-decisions guidance"
+  assert_grep "preserve every accepted product/engineering requirement" "$brief" \
+    "review intent lost accepted requirements"
+  assert_grep "accepted requirements in \`## Firstmate spec\` plus later accepted clarifications" "$brief" \
+    "review intent lost specification acceptance criteria or later clarifications"
+  assert_grep "without relabeling Firstmate specifications as captain words" "$brief" \
+    "review intent lost provenance separation"
+  assert_grep "your own unapproved tradeoffs" "$brief" \
+    "review intent admitted unapproved worker choices"
+  assert_grep "private handoff destinations and worker-control instructions" "$brief" \
+    "review intent lost private control separation"
+  assert_grep "offline-test, no-live-effect, access" "$brief" \
+    "review intent confused safety constraints with worker control"
+  assert_grep "machine attestation preserved verbatim" "$brief" \
+    "PR brevity weakened attestation"
+  assert_grep "Never shorten acceptance criteria or machine attestation" "$brief" \
+    "PR brevity could truncate review acceptance"
   # A bare reference cannot preserve the captain's ask, so the rendered DOD states
   # the self-sufficiency rule and requires referenced material to be resolved into
   # its substance.
-  assert_grep "The \`--intent\` string you pass must be self-sufficient" "$brief" \
+  assert_grep "The \`--intent\` string must be self-sufficient" "$brief" \
     "no-mistakes DOD must require a self-sufficient --intent string"
-  assert_grep "write the substance of the referenced items into \`--intent\`" "$brief" \
+  assert_grep "resolve referenced reports, decisions, and PRs into their accepted substance" "$brief" \
     "no-mistakes DOD must tell the worker to resolve report, decision, and PR references into substance"
 
   # The --yes ban is a fleet-wide prohibition, not a preference, and it must not
@@ -369,7 +375,15 @@ test_no_mistakes_dod_wording() {
     "no-mistakes DOD still states the --yes ban as a preference"
   assert_no_grep "no-mistakes refuses" "$brief" \
     "no-mistakes DOD must not claim the tool itself refuses --yes"
-  pass "fm-brief.sh: no-mistakes DOD keeps its apostrophe prose and bans --yes outright"
+  assert_grep 'working: implementation committed; starting validation' "$brief" \
+    "implementation commit did not continue validation"
+  assert_no_grep 'done: {summary}' "$brief" "implementation commit still reports final done"
+  assert_grep 'resume an active run rather than starting a duplicate' "$brief" \
+    "automatic validation start lost active-run custody"
+  assert_grep 'exact current branch head, not an earlier commit' "$brief" \
+    "green PR readiness lacks current-head proof"
+  assert_grep 'Green CI does not authorize a merge' "$brief" "green CI expanded merge authority"
+  pass "fm-brief.sh: no-mistakes preserves complete private acceptance and current-head delivery boundaries"
 }
 
 test_ask_user_escalation_format() {
@@ -868,6 +882,35 @@ test_worker_role_scope() {
   pass "fm-brief: scaffolds leave the worker role scope to the launch boundary and keep the secondmate contract"
 }
 
+test_local_error_correction_contract() {
+  local home kind brief rule baseline=
+  home="$TMP_ROOT/local-errors"
+  for kind in scout no-mistakes direct-PR local-only; do
+    if [ "$kind" = scout ]; then
+      FM_HOME="$home" "$ROOT/bin/fm-brief.sh" "$kind" sample --scout >/dev/null || fail "scout scaffold failed"
+    else
+      FM_HOME="$home" "$ROOT/bin/fm-brief.sh" "$kind" sample --mode "$kind" >/dev/null || fail "$kind scaffold failed"
+    fi
+    brief="$home/data/$kind/brief.md"
+    rule=$(awk '/^5\. For a local tool/ { emit=1 } /^6\./ { emit=0 } emit' "$brief")
+    [ -n "$rule" ] || fail "$kind lost local correction rule"
+    if [ -n "$baseline" ]; then
+      [ "$rule" = "$baseline" ] || fail "$kind has a different correction policy"
+    fi
+    baseline=$rule
+    assert_contains "$rule" 'current file, type signature, selected page/session, or help' "missing evidence sources"
+    assert_contains "$rule" 'one evidence-backed correction within your existing authority' "unbounded repair"
+    assert_contains "$rule" 'If that correction fails on the same obstacle' "missing bounded stop"
+    assert_contains "$rule" 'do not repeat unchanged attempts' "unchanged retries permitted"
+    assert_contains "$rule" "another task's files/session or shared configuration" "foreign/shared mutation permitted"
+    assert_contains "$rule" 'Credential, security, destructive, production, and daemon boundaries still stop immediately' "repair relaxed authority"
+    assert_grep 'resolved` line carrying its exact key' "$brief" "repair lost keyed resolution"
+    assert_no_grep 'same obstacle twice' "$brief" "mechanical error counter survived"
+  done
+  pass "fm-brief: every worker mode receives the same bounded local correction and safety distinctions"
+}
+
+test_local_error_correction_contract
 test_worker_role_scope
 test_script_parses
 test_no_heredoc_in_command_substitution

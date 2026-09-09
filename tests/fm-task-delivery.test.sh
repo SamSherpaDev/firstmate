@@ -370,6 +370,10 @@ STUB
   done
 
   payload="$TMP_ROOT/promote-dod/payload-promote-dod-no-mistakes"
+  assert_grep 'no second start instruction is needed' "$payload" "promotion reintroduced a validation-start pause"
+  assert_grep 'retain every accepted ship-relevant product/engineering requirement' "$payload" \
+    "promotion silently dropped accepted scout-derived constraints"
+  assert_grep 'exact current branch head, not an earlier commit' "$payload" "promotion lost current-head proof"
   assert_grep "ask-user findings are never yours to answer: escalate to firstmate" "$payload" \
     "promoted no-mistakes worker did not receive the ask-user escalation rule"
   assert_grep "write only the ask-user findings, verbatim and unparaphrased (id, severity, file, line, description, authority)" "$payload" \
@@ -508,9 +512,9 @@ EOF
   assert_grep "supersedes every earlier brief instruction about constructing \`--intent\`" \
     "$home/data/$id/launch-brief.md" \
     "marked legacy spawn did not override its stale intent instruction"
-  assert_grep "plus any later words the captain actually supplied" \
+  assert_grep "plus later accepted clarifications" \
     "$home/data/$id/launch-brief.md" \
-    "marked legacy launch contract excluded later captain clarifications"
+    "marked legacy launch contract excluded later accepted clarifications"
   authorized=$(awk '$0 == "## Captain intent authorized for --intent" { emit=1; next } emit && /^$/ { exit } emit { print }' "$home/data/$id/launch-brief.md")
   assert_contains "$authorized" "Fix the legacy dispatch boundary." \
     "marked legacy launch contract omitted captain words"
@@ -542,12 +546,20 @@ EOF
   assert_grep "supersedes every earlier brief instruction about constructing \`--intent\`" \
     "$home/data/$id/launch-brief.md" \
     "migrated launch contract did not supersede its stale mixed-Task DoD"
-  assert_grep "plus any later words the captain actually supplied" \
+  assert_grep "plus later accepted clarifications" \
     "$home/data/$id/launch-brief.md" \
-    "migrated launch contract excluded later captain clarifications"
-  assert_grep "The Definition of done's rule that \`--intent\` must be self-sufficient still governs" \
+    "migrated launch contract excluded later accepted clarifications"
+  assert_grep "The \`--intent\` string must be self-sufficient" \
     "$home/data/$id/launch-brief.md" \
-    "migrated launch contract's overlay dropped the self-sufficiency pointer"
+    "migrated launch contract's overlay dropped self-sufficiency"
+  spec_body=$(awk '$0 == "## Specification context for acceptance review" { emit=1; next } emit { print }' "$home/data/$id/launch-brief.md")
+  assert_contains "$spec_body" 'Preserve the existing compatibility path.' \
+    "launch overlay silently dropped accepted engineering context"
+  # shellcheck disable=SC2016 # Literal Markdown in the emitted acceptance contract.
+  assert_grep 'accepted requirements in `## Firstmate spec`' "$home/data/$id/launch-brief.md" \
+    "launch overlay excludes Firstmate acceptance requirements"
+  assert_grep 'private handoff destinations and worker-control instructions' "$home/data/$id/launch-brief.md" \
+    "launch overlay allows private control into review intent"
 
   id=delivery-legacy-unmarked-no-mistakes
   mkdir -p "$home/data/$id"

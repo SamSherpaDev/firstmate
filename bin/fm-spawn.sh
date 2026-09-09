@@ -15,8 +15,9 @@
 #   ship or scout spawn also refuses leftover `{TASK}` / `{FIRSTMATE_SPEC}`
 #   placeholders, an empty Task, or an incomplete pair of Task subsections.
 #   Every ship or scout spawn renders `launch-brief.md`; for a no-mistakes ship
-#   it also carries the current `--intent` contract and the extracted captain
-#   intent. A legacy mixed Task is accepted there only under bin/fm-dod-lib.sh's
+#   it also carries the current `--intent` contract and separately attributed
+#   captain intent and specification context. A legacy mixed Task is accepted
+#   there only under bin/fm-dod-lib.sh's
 #   provenance-marking rules; unmarked legacy Tasks stop for migration rather
 #   than becoming intent. That library owns the parsing and intent rules. When
 #   the explicit mode carries less rigor than the project's standing posture, a
@@ -2203,9 +2204,11 @@ if [ "$KIND" = ship ] || [ "$KIND" = scout ]; then
   if [ "$KIND" = ship ] && [ "$MODE" = no-mistakes ]; then
     if fm_brief_task_heading_present "$BRIEF" "## Captain's intent"; then
       CAPTAIN_INTENT=$(fm_brief_task_heading_body "$BRIEF" "## Captain's intent")
+      SPEC_CONTEXT=$(fm_brief_task_heading_body "$BRIEF" "## Firstmate spec")
     else
       LEGACY_TASK_BODY=$(fm_brief_heading_body "$BRIEF" "# Task")
       CAPTAIN_INTENT=$(fm_brief_marked_captain_words "$LEGACY_TASK_BODY")
+      SPEC_CONTEXT=$LEGACY_TASK_BODY
       if [ -z "$(printf '%s' "$CAPTAIN_INTENT" | tr -d '[:space:]')" ]; then
         echo "error: legacy mixed # Task brief has no provenance-marked captain words for no-mistakes --intent; add Captain: lines or migrate to ## Captain's intent and ## Firstmate spec" >&2
         exit 1
@@ -2222,7 +2225,7 @@ if [ "$KIND" = ship ] || [ "$KIND" = scout ]; then
       printf '\n' &&
       fm_brief_worker_role &&
       if [ "$KIND" = ship ] && [ "$MODE" = no-mistakes ]; then
-        fm_brief_intent_overlay "$CAPTAIN_INTENT"
+        fm_brief_intent_overlay "$CAPTAIN_INTENT" "$SPEC_CONTEXT"
       fi
   } > "$BRIEF_TMP" || { rm -f -- "$BRIEF_TMP"; echo "error: could not render current launch contract for $SOURCE_BRIEF" >&2; exit 1; }
   if ! mv "$BRIEF_TMP" "$BRIEF"; then
