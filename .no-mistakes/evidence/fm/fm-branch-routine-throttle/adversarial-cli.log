@@ -1,0 +1,11 @@
+Append new silent progress, then unrelated fleet escalation
+17
+18
+Pending after fleet escalation:
+{"seq":17,"epoch":1789809577,"task":"build","wake":"","verdict":"routine","summary":"Build continues with packaging","silent":true,"statusEndpoint":0,"statusIdent":"-"}
+Attempt forbidden silent captain outcome:
+error: silent outcomes must be routine outcomes
+Rejected as required
+heartbeat
+2
+Pending after task completion:

@@ -1,0 +1,2 @@
+quiet: timeout stopped watcher after 4 seconds; heartbeat streak=2; queued wakes=0; output was only timeout termination of sleep.
+nonpi: timeout stopped watcher after 4 seconds; heartbeat streak=2; queued wakes=0; output was only timeout termination of sleep.
