@@ -1,0 +1,4 @@
+ok - a repeated bare turn-end with unchanged status absorbs with no wake and no current-state read
+ok - a turn-end with changed status during suppression still surfaces
+ok - a no-change turn-end past its coalescing bound re-surfaces
+ok - signal_turnend_nochange_coalesced absorbs only fresh matching repeats of bare turn-ends

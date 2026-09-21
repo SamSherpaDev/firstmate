@@ -1,0 +1,19 @@
+=== live watcher coalescing demo ===
+ROOT=/Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M32HST9568SW9E78G4VGGHEX
+STATE=/private/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/live-watch-demo.g10XN0/live-demo/state
+--- 1. FIRST idle bare turn-end must SURFACE (swallowed-finish fix preserved) ---
+watch1.out:
+signal: /private/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/live-watch-demo.g10XN0/live-demo/state/task.turn-ended
+marker:
+r1:3236007374726f6e673a31363737373233343a38323938313134393a313739303031333933302e34393735353836383100526567756c61722046696c653a313030363434002d007265616461626c65007265616461626c65 1790013933--- ack the first wake via real drain ---
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 2 --recovery-generation 56328.1790013932.1Shrti
+--- 2. REPEAT with unchanged status must ABSORB (no wake, no queue, no crew read) ---
+PASS: triage log shows absorbed benign signal
+PASS: watcher still alive (absorbed, kept blocking)
+watch2.out bytes:        0 (expected 0)
+wake-queue bytes:        0 (expected 0)
+crew reads:        0 (expected 0)
+--- 3. ADVERSARIAL: new status append must SURFACE despite suppression ---
+PASS: changed-status turn-end surfaced:
+check: rearm-resurface
+=== DEMO COMPLETE ===

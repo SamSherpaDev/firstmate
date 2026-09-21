@@ -1,0 +1,17 @@
+=== FM_HOME=/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/tmp.w97oyZzxgV ===
+--- 1. silent task-scoped routine (no-change review) must be ACCEPTED ---
+1
+exit=0 (expected 0)
+--- store ---
+{"seq":1,"epoch":1790013914,"task":"task-9","wake":"","verdict":"routine","summary":"turn ended, nothing changed","silent":true,"statusEndpoint":0,"statusIdent":"-"}
+--- 2. silent captain must be REJECTED (meaningful failures preserved) ---
+error: silent outcomes must be routine outcomes
+exit=2 (expected non-zero)
+--- 3. visible routine + startup-replay hides silent, shows visible ---
+--- startup-replay output (should contain visible, NOT silent) ---
+BRANCH OUTCOMES (handled by the supervision branch, not yet seen by this session):
+{"seq":2,"epoch":1790013914,"task":"task-1","wake":"","verdict":"routine","summary":"worker recovered automatically","silent":false,"statusEndpoint":0,"statusIdent":"-"}
+--- end replay ---
+--- unread after replay (should be empty) ---
+unread-exit=0 (expected 0, empty)
+HOME preserved at /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/tmp.w97oyZzxgV for inspection
