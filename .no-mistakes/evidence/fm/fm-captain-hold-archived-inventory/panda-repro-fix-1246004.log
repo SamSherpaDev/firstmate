@@ -1,0 +1,55 @@
+== captain holds + completion pass inventory
+$ /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M3MVXWW51TCWY6DS4FF8C6V5/bin/fm-captain-hold.sh hold panda-library-proposals --title Panda library proposals --reason captain picks a library
+panda-library-proposals
+[exit 0]
+$ /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M3MVXWW51TCWY6DS4FF8C6V5/bin/fm-captain-hold.sh hold panda-model-setting-lockdown --title Panda model setting lockdown --reason captain approves lockdown
+panda-model-setting-lockdown
+[exit 0]
+$ /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M3MVXWW51TCWY6DS4FF8C6V5/bin/fm-captain-hold.sh complete panda-model-retest panda-library-proposals panda-model-setting-lockdown
+complete: panda-model-retest captain-call inventory reviewed (panda-library-proposals,panda-model-setting-lockdown)
+[exit 0]
+decision_keys=panda-library-proposals,panda-model-setting-lockdown
+== captain answers lockdown; Done retention archives it
+$ /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M3MVXWW51TCWY6DS4FF8C6V5/bin/fm-captain-hold.sh answer panda-model-setting-lockdown --decision-file answer-b.txt
+answered: panda-model-setting-lockdown
+[exit 0]
+--- tasks-axi show panda-model-setting-lockdown (live backlog):
+error: "Task \"panda-model-setting-lockdown\" not found in this backlog"
+code: NOT_FOUND
+help[1]: Run `tasks-axi list` to see existing tasks
+--- data/done-archive.md:
+
+## Archived 2026-09-28
+- [x] panda-model-setting-lockdown - Panda model setting lockdown (repo: firstmate) (kind: captain) (done 2026-09-28) (hold: captain approves lockdown) (hold-kind: captain)
+  Resolution recorded by fm-captain-hold.
+  Decision digest: 0b8628c5acda82ed6ae869da21664e49ccee3f980625126ff8dc728330475837
+  Resolution mode: answered
+
+  Captain decision:
+  Lock the model setting down.
+
+== captain answers library proposals (stays live in Done)
+$ /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M3MVXWW51TCWY6DS4FF8C6V5/bin/fm-captain-hold.sh answer panda-library-proposals --decision-file answer-a.txt
+answered: panda-library-proposals
+[exit 0]
+== the reported failing commands
+$ /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M3MVXWW51TCWY6DS4FF8C6V5/bin/fm-captain-hold.sh verify panda-model-retest
+verified: panda-model-retest captain-call inventory
+[exit 0]
+$ /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M3MVXWW51TCWY6DS4FF8C6V5/bin/fm-captain-hold.sh complete panda-model-retest --none
+complete: panda-model-retest captain-call inventory reviewed (panda-library-proposals,panda-model-setting-lockdown)
+[exit 0]
+$ /Users/trpmac2/.no-mistakes/worktrees/354ca8d119eb/01M3MVXWW51TCWY6DS4FF8C6V5/bin/fm-teardown.sh panda-model-retest
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+teardown panda-model-retest complete (window firstmate:fm-panda-model-retest, worktree /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.3MNXvO/projects/missing-panda-model-retest)
+Backlog: panda-model-retest is closed in /private/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/fm-lab.3MNXvO/data/backlog.md. Run bin/fm-tasks-axi.sh ready for dependency-cleared candidates, check date gates, and dispatch only work whose blockers are gone and date is due.
+[exit 0]
+--- after teardown:
+meta removed
+  state: done

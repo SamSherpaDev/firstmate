@@ -1,0 +1,53 @@
+===== CASE: archived row closed without a captain answer
+archive rows mentioning id: 1
+$ fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.RkTUVE/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.RkTUVE/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ fm-teardown.sh panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.RkTUVE/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+REFUSED: scout task panda-model-retest has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+RESULT: scout meta still present (teardown refused)
+===== CASE: id only mentioned by another archived row
+$ fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.x6prle/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.x6prle/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ fm-teardown.sh panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.x6prle/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+REFUSED: scout task panda-model-retest has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+RESULT: scout meta still present (teardown refused)
+===== CASE: answered row archived, then id recreated live and unheld
+$ fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: captain-held task panda-model-setting-lockdown is neither held for the captain nor closed with a recorded captain answer
+[exit 1]
+$ fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: captain-held task panda-model-setting-lockdown is neither held for the captain nor closed with a recorded captain answer
+[exit 1]
+$ fm-teardown.sh panda-model-retest
+fm-captain-hold: captain-held task panda-model-setting-lockdown is neither held for the captain nor closed with a recorded captain answer
+REFUSED: scout task panda-model-retest has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+RESULT: scout meta still present (teardown refused)
+===== CASE: inventoried id never existed
+$ fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.3m2dEP/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.3m2dEP/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ fm-teardown.sh panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.3m2dEP/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+REFUSED: scout task panda-model-retest has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+RESULT: scout meta still present (teardown refused)

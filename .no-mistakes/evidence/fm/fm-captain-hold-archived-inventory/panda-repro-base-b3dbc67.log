@@ -1,0 +1,55 @@
+== captain holds + completion pass inventory
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-base.7TMOmM/bin/fm-captain-hold.sh hold panda-library-proposals --title Panda library proposals --reason captain picks a library
+panda-library-proposals
+[exit 0]
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-base.7TMOmM/bin/fm-captain-hold.sh hold panda-model-setting-lockdown --title Panda model setting lockdown --reason captain approves lockdown
+panda-model-setting-lockdown
+[exit 0]
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-base.7TMOmM/bin/fm-captain-hold.sh complete panda-model-retest panda-library-proposals panda-model-setting-lockdown
+complete: panda-model-retest captain-call inventory reviewed (panda-library-proposals,panda-model-setting-lockdown)
+[exit 0]
+decision_keys=panda-library-proposals,panda-model-setting-lockdown
+== captain answers lockdown; Done retention archives it
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-base.7TMOmM/bin/fm-captain-hold.sh answer panda-model-setting-lockdown --decision-file answer-b.txt
+answered: panda-model-setting-lockdown
+[exit 0]
+--- tasks-axi show panda-model-setting-lockdown (live backlog):
+error: "Task \"panda-model-setting-lockdown\" not found in this backlog"
+code: NOT_FOUND
+help[1]: Run `tasks-axi list` to see existing tasks
+--- data/done-archive.md:
+
+## Archived 2026-09-28
+- [x] panda-model-setting-lockdown - Panda model setting lockdown (repo: firstmate) (kind: captain) (done 2026-09-28) (hold: captain approves lockdown) (hold-kind: captain)
+  Resolution recorded by fm-captain-hold.
+  Decision digest: 0b8628c5acda82ed6ae869da21664e49ccee3f980625126ff8dc728330475837
+  Resolution mode: answered
+
+  Captain decision:
+  Lock the model setting down.
+
+== captain answers library proposals (stays live in Done)
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-base.7TMOmM/bin/fm-captain-hold.sh answer panda-library-proposals --decision-file answer-a.txt
+answered: panda-library-proposals
+[exit 0]
+== the reported failing commands
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-base.7TMOmM/bin/fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.VvverK/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-base.7TMOmM/bin/fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.VvverK/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-base.7TMOmM/bin/fm-teardown.sh panda-model-retest
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.VvverK/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+REFUSED: scout task panda-model-retest has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+--- after teardown:
+meta still present
