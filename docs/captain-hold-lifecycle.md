@@ -115,6 +115,8 @@ Scout teardown calls the read-only `verify` subcommand after checking for the re
 
 - The recorded attestation exists.
 - Every recorded inventory entry is still durable: actively captain-held, or carrying a recorded answer.
+  An entry that Done retention moved out of the markdown backlog stays durable when its checked row in the configured tasks-axi Done archive (by default `done-archive.md` beside the backlog) still carries the recorded resolution.
+  A live task of the same id always takes precedence, and note archives or report mentions are never settlement evidence.
 - No keyed status decision opened after the last `complete`.
 
 A keyed status decision opened after the last `complete` makes `verify` fail, and re-running `complete` is the repair.
@@ -514,6 +516,8 @@ The suite does not test the accepted merge-to-cleanup re-hold window or asynchro
 - A report-only unresolved captain call refuses `--none` completion before teardown can erase the source.
 - Non-forced scout teardown always requires the durable inventory verification.
 - The recorded-answer guard holds: a bare `tasks-axi done` close fails `verify` until `answer` records the captain's word, and an ordinary finished task cannot be dressed up as an answered call.
+- A settled inventory entry that Done retention archived still passes `verify`, `complete --none`, and teardown, through the default, user-configured, and project-configured archive paths.
+  An unchecked archived row, an archived close without a recorded answer, an unreadable live backlog, and a recreated live id never borrow archived settlement.
 
 ### Answers, stamps, and deferral
 
