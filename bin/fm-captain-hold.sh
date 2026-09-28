@@ -143,6 +143,11 @@
 # `verify` is read-only and is called by scout teardown, so teardown cannot
 # erase a source before this gate has succeeded: every recorded inventory
 # entry must still be durable and no keyed status decision may be open.
+# For inventory checks only, a missing markdown task may resolve to its Done
+# retention archive row, provided that checked row retains a resolution record.
+# The configured tasks-axi archive (or done-archive.md beside the backlog) is
+# authoritative; note archives and report mentions are not settlement evidence.
+# A live task always takes precedence over an archived copy of the same id.
 # Metadata compatibility: the attestation keeps the historical
 # `decisions_reviewed=1` and `decision_keys=` keys, and an inventory entry that
 # names no existing task resolves through the legacy `<origin>-decision-<entry>`
@@ -528,6 +533,75 @@ verify_hold_durable() {  # <task-id>
   fail "captain-held task $id is neither held for the captain nor closed with a recorded captain answer"
 }
 
+# Done retention keeps the original checked task bullet and its indented body
+# under an `Archived` heading, not a normal backlog section. Read only that
+# exact row, never a mention in another task or the superseded note archive.
+# This evidence is for the completion gate alone, not the keyed-answer intake.
+archived_hold_durable() {  # <task-id>; returns 1 when no settled archive row exists
+  local id=$1 data root backend archive body
+  data=$(fm_backlog_data_absolute "$DATA") || fail "data directory cannot be resolved: $DATA"
+  root=$(fm_backlog_root "$data") || fail "$FM_BACKLOG_TRANSITION_ERROR"
+  backend=$(fm_tasks_axi_backend "$root") || fail "cannot resolve backlog backend"
+  [ "$backend" = markdown ] || return 1
+  # An unreadable live backlog is not proof that the id was retained away.
+  printf '%s\n' "$TASK_SHOW_OUTPUT" | grep -qx 'code: NOT_FOUND' \
+    || fail "cannot establish that $id is absent from the live backlog before consulting its archive"
+  # Match tasks-axi's archive precedence: project config, user config, then
+  # done-archive.md beside the explicitly addressed backlog. Relative configured
+  # paths resolve from the backlog root, including with FM_DATA_OVERRIDE.
+  archive=$(perl -e '
+    use strict; use warnings;
+    my ($root, $home, $data) = @ARGV;
+    my $archive;
+    for my $file ("$home/.tasks-axi/config.toml", "$root/.tasks.toml") {
+      next unless -e $file || -l $file;
+      open my $fh, "<", $file or die "cannot read $file: $!\n";
+      my $markdown = 0;
+      while (my $line = <$fh>) {
+        $line =~ s/(?:"[^"]*"|\x27[^\x27]*\x27)(*SKIP)(*F)|#.*//g;
+        $line =~ s/^\s+|\s+$//g;
+        if ($line =~ /^\[([^\]]+)\]$/) {
+          my $section = $1; $section =~ s/^\s+|\s+$//g;
+          $markdown = $section eq "markdown"; next;
+        }
+        next unless $markdown && $line =~ /^archive\s*=\s*(.*)$/;
+        my $value = $1;
+        $value =~ /^(["\x27])(.*)\1$/
+          or die "invalid markdown.archive in $file\n";
+        $archive = $2;
+      }
+      close $fh or die "cannot finish reading $file: $!\n";
+    }
+    $archive = "$data/done-archive.md" unless defined $archive;
+    $archive =~ /\S/ or die "empty markdown.archive\n";
+    print $archive =~ m{^/} ? $archive : "$root/$archive";
+  ' "$root" "${HOME:-}" "$data") || fail "cannot resolve the Done archive for $id"
+  [ -e "$archive" ] || [ -L "$archive" ] || return 1
+  [ -f "$archive" ] && [ -r "$archive" ] || fail "Done archive is not a readable file: $archive"
+  body=$(perl -e '
+    use strict; use warnings;
+    my ($file, $id) = @ARGV;
+    open my $fh, "<", $file or die "cannot read $file: $!\n";
+    my ($archived, $collect, $matches, $body) = (0, 0, 0, "");
+    while (my $line = <$fh>) {
+      $line =~ s/\r?\n$//;
+      if ($line =~ /^## /) {
+        $archived = $line =~ /^## Archived \d{4}-\d{2}-\d{2}(?:\b|T)/;
+        $collect = 0;
+      } elsif ($line =~ /^\S/) {
+        $collect = $archived && $line =~ /^- \[x\] \Q$id\E - /;
+        ++$matches if $collect;
+      } elsif ($collect && $line =~ /^  (.*)$/) {
+        $body .= "$1\n";
+      }
+    }
+    close $fh or die "cannot finish reading $file: $!\n";
+    die "multiple archived rows for $id in $file\n" if $matches > 1;
+    print $body if $matches == 1;
+  ' "$archive" "$id") || fail "cannot read the archived captain call $id"
+  body_has_resolution_record "$body"
+}
+
 # --- migrated legacy-id resolution on the Beads backend ---------------------
 #
 # A home that moved its backlog from markdown to Beads no longer carries the
@@ -723,18 +797,27 @@ resolve_migrated_entry() {  # <origin-or-empty> <entry>
 # Resolve one inventory entry or channel key to the task that carries it: the
 # exact task id when it exists, else the legacy derived identity, else - on the
 # beads backend - the migrated row the markdown-to-beads hold migration wrote.
-# Prints "<resolved id> <how>", where <how> is exact, legacy, migrated-note or
-# migrated-prefix, so a caller can record which evidence carried the attestation.
-resolve_entry() {  # <origin-or-empty> <entry>; prints "<id> <how>" or fails
-  local origin=$1 entry=$2 legacy migrated rc
+# Inventory callers also permit archived settlement evidence after a live-id
+# miss. Prints "<resolved id> <how>", where <how> is exact, legacy, archived,
+# migrated-note or migrated-prefix, so the attestation keeps its evidence type.
+resolve_entry() {  # <origin-or-empty> <entry> [inventory-0-or-1]; prints "<id> <how>" or fails
+  local origin=$1 entry=$2 inventory=${3:-0} legacy migrated rc
   if task_show "$entry"; then
     printf '%s exact' "$entry"
+    return 0
+  fi
+  if [ "$inventory" = 1 ] && archived_hold_durable "$entry"; then
+    printf '%s archived' "$entry"
     return 0
   fi
   if [ -n "$origin" ] && [ "$origin" != "$BINDING_ANY" ]; then
     legacy=$(legacy_hold_id "$origin" "$entry")
     if task_show "$legacy"; then
       printf '%s legacy' "$legacy"
+      return 0
+    fi
+    if [ "$inventory" = 1 ] && archived_hold_durable "$legacy"; then
+      printf '%s archived' "$legacy"
       return 0
     fi
   fi
@@ -800,14 +883,14 @@ write_hold_set_stamp() {  # <task-id> <shown-body> <timestamp> <preserve-existin
 # attestation evidence.
 verify_entry_durable() {  # <origin-or-empty> <entry>; prints "<id> <how>"
   local origin=$1 entry=$2 resolved resolve_status=0
-  resolved=$(resolve_entry "$origin" "$entry") || resolve_status=$?
+  resolved=$(resolve_entry "$origin" "$entry" 1) || resolve_status=$?
   if [ "$resolve_status" -ne 0 ]; then
     [ "$resolve_status" -ne 124 ] \
       || fail "the backlog backend exceeded its read bound resolving $entry"
     exit "$resolve_status"
   fi
   printf '%s\n' "$resolved"
-  verify_hold_durable "${resolved%% *}"
+  [ "${resolved##* }" = archived ] || verify_hold_durable "${resolved%% *}"
 }
 
 command_hold() {

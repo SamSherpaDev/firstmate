@@ -873,6 +873,162 @@ test_answer_records_and_closes() {
   pass "answer records the captain's words, closes idempotently, and releases routed work"
 }
 
+# Retention archives the whole Done row, including the resolution. That row is
+# still durable inventory evidence even though tasks-axi show no longer finds it.
+test_completion_survives_answer_retention() {
+  local home id call mode show
+  for mode in answered released reconciled legacy; do
+    home=$(make_home "retained-$mode")
+    id=sample-retained-review
+    call=sample-retained-call
+    [ "$mode" != legacy ] || call="$id-decision-route"
+    mkdir -p "$home/data/$id"
+    tasks_in "$home" add "$id" "Review retained calls" --kind scout --start >/dev/null \
+      || fail "could not create retention origin"
+    write_origin_meta "$home" "$id"
+    printf 'done: report complete\n' > "$home/state/$id.status"
+    printf '# Retention review\n' > "$home/data/$id/report.md"
+    run_captain "$home" hold "$call" --title "Choose retained option" --reason "choice pending" >/dev/null \
+      || fail "could not create retained call"
+    if [ "$mode" = legacy ]; then
+      run_captain "$home" complete "$id" route >/dev/null || fail "legacy inventory failed"
+    else
+      run_captain "$home" complete "$id" "$call" >/dev/null || fail "inventory failed"
+    fi
+    printf 'Use the retained option.\n' > "$home/decision.txt"
+    case "$mode" in
+      released)
+        run_captain "$home" answer "$call" --decision-file "$home/decision.txt" --release >/dev/null \
+          || fail "release failed"
+        run_captain "$home" complete "$id" --none >/dev/null || fail "released inventory failed"
+        tasks_in "$home" "done" "$call" >/dev/null || fail "released work close failed"
+        ;;
+      reconciled)
+        request_reconciles "$home" retained-board "$call" || fail "reconcile request failed"
+        run_captain "$home" reconcile close "$call" --evidence-file "$home/decision.txt" >/dev/null \
+          || fail "reconcile close failed"
+        ;;
+      *) run_captain "$home" answer "$call" --decision-file "$home/decision.txt" >/dev/null \
+          || fail "answer failed" ;;
+    esac
+    run_captain "$home" verify "$id" >/dev/null || fail "settled live inventory failed"
+    tasks_in "$home" prune --keep 0 >/dev/null || fail "retention failed"
+    if tasks_in "$home" show "$call" > "$home/absent.out" 2>&1; then
+      fail "retention fixture left the call in the backlog"
+    fi
+    assert_grep "$call" "$home/data/done-archive.md" "retention lost the settled call"
+    run_captain "$home" verify "$id" >/dev/null || fail "archived $mode inventory failed verification"
+    run_captain "$home" complete "$id" --none >/dev/null || fail "archived $mode inventory blocked --none"
+    run_teardown "$home" "$id" > "$home/teardown.out" 2>&1 \
+      || fail "archived $mode inventory blocked teardown: $(cat "$home/teardown.out")"
+    [ ! -e "$home/state/$id.meta" ] || fail "teardown left the scout metadata"
+    show=$(tasks_in "$home" show "$id")
+    assert_contains "$show" 'state: done' "teardown did not finish the scout"
+  done
+  pass "answer, release, reconcile and legacy inventory survive Done retention and scout teardown"
+}
+
+test_archive_inventory_uses_configured_path() {
+  local shape home archive data
+  for shape in default relative absolute user relocated; do
+    (
+      home=$(make_home "archive-path-$shape")
+      mkdir -p "$home/user/.tasks-axi"
+      export HOME="$home/user"
+      printf 'backend = "markdown"\n[markdown]\npath = "data/backlog.md"\n' > "$home/.tasks.toml"
+      archive="$home/data/done-archive.md"
+      case "$shape" in
+        relative)
+          archive="$home/history/calls # settled.md"
+          printf 'archive = "history/calls # settled.md" # retained calls\n' >> "$home/.tasks.toml"
+          ;;
+        absolute)
+          archive="$home/history/calls.md"
+          printf "archive = '%s'\n" "$archive" >> "$home/.tasks.toml"
+          # A project archive overrides a user archive rather than merging them.
+          printf '[markdown]\narchive = "wrong-archive.md"\n' > "$HOME/.tasks-axi/config.toml"
+          ;;
+        user)
+          archive="$home/history/user-calls.md"
+          printf '[markdown]\narchive = "history/user-calls.md"\n' > "$HOME/.tasks-axi/config.toml"
+          ;;
+      esac
+      write_origin_meta "$home" sample-path-review
+      run_captain "$home" hold sample-path-call --title "Archive path choice" --reason "choice pending" >/dev/null \
+        || fail "could not create archive path fixture"
+      run_captain "$home" complete sample-path-review sample-path-call >/dev/null \
+        || fail "could not inventory archive path fixture"
+      printf 'Use this path.\n' > "$home/answer.txt"
+      run_captain "$home" answer sample-path-call --decision-file "$home/answer.txt" >/dev/null \
+        || fail "could not answer archive path fixture"
+      tasks_in "$home" prune --keep 0 >/dev/null || fail "could not archive path fixture"
+      assert_grep sample-path-call "$archive" "fixture did not use the expected archive"
+      data="$home/data"
+      if [ "$shape" = relocated ]; then
+        mkdir -p "$home/relocated"
+        mv "$home/data" "$home/relocated/records"
+        data="$home/relocated/records"
+        archive="$data/done-archive.md"
+      fi
+      FM_HOME="$home" FM_DATA_OVERRIDE="$data" "$ROOT/bin/fm-captain-hold.sh" \
+        complete sample-path-review --none >/dev/null || fail "$shape archive path was not resolved"
+      FM_HOME="$home" FM_DATA_OVERRIDE="$data" "$ROOT/bin/fm-captain-hold.sh" \
+        verify sample-path-review >/dev/null || fail "$shape archive path did not verify"
+      if [ "$shape" = default ]; then
+        cat > "$home/fakebin/tasks-axi" <<'SH'
+#!/usr/bin/env bash
+case "$*" in
+  'show sample-path-call '*) printf 'code: VALIDATION_ERROR\n'; exit 1 ;;
+esac
+exec "$REAL_TASKS_AXI" "$@"
+SH
+        chmod +x "$home/fakebin/tasks-axi"
+        if run_captain "$home" verify sample-path-review > "$home/unreadable.out" 2>&1; then
+          fail "archive supplied settlement while the live backlog could not be read"
+        fi
+        assert_grep 'cannot establish' "$home/unreadable.out" "unreadable backlog was treated as absence"
+      fi
+      # A newly created live id must not inherit an old archived resolution.
+      (cd "${data%/*}" && tasks-axi add sample-path-call "New unheld task" \
+        --file "$data/backlog.md" >/dev/null) || fail "could not recreate live task id"
+      if FM_HOME="$home" FM_DATA_OVERRIDE="$data" "$ROOT/bin/fm-captain-hold.sh" \
+        verify sample-path-review > "$home/reused.out" 2>&1; then
+        fail "$shape archive shadowed a live unheld task"
+      fi
+    ) || fail "archive addressing case failed: $shape"
+  done
+  pass "inventory uses default, configured, inherited and relocated archives without shadowing live tasks"
+}
+
+# A missing row is not automatically settled: unchecked archived rows and a
+# close without a recorded answer are not settlement evidence.
+test_archive_inventory_refuses_unsettled_or_missing() {
+  local home id call
+  home=$(make_home retained-negative)
+  id=sample-retained-negative
+  write_origin_meta "$home" "$id"
+  run_captain "$home" hold sample-unanswered --title "Unanswered call" --reason "choice pending" >/dev/null \
+    || fail "could not hold negative fixture"
+  tasks_in "$home" "done" sample-unanswered >/dev/null || fail "could not close unanswered fixture"
+  tasks_in "$home" prune --keep 0 >/dev/null || fail "could not archive unanswered fixture"
+  run_captain "$home" hold sample-still-held --title "Still held call" --reason "choice pending" >/dev/null \
+    || fail "could not hold live fixture"
+  run_captain "$home" complete "$id" sample-still-held >/dev/null \
+    || fail "durable live captain hold must remain accepted"
+  run_captain "$home" verify "$id" >/dev/null || fail "durable live hold failed verification"
+  tasks_in "$home" prune --state queued --keep 0 >/dev/null || fail "could not archive unchecked fixture"
+  for call in sample-unanswered sample-still-held sample-never-created; do
+    printf 'decisions_reviewed=1\ndecision_keys=%s\n' "$call" >> "$home/state/$id.meta"
+    if run_captain "$home" complete "$id" --none > "$home/complete.out" 2>&1; then
+      fail "completion accepted absent unsettled call $call"
+    fi
+    if run_captain "$home" verify "$id" > "$home/verify.out" 2>&1; then
+      fail "verification accepted absent unsettled call $call"
+    fi
+  done
+  pass "archived unchecked/unanswered rows and nonexistent ids do not prove settlement"
+}
+
 # --release lifts the hold instead of closing, preserving the work item's own
 # body under the record; a re-held task later accepts a new answer.
 test_release_frees_held_work() {
@@ -4038,6 +4194,9 @@ test_uninventoried_report_decision_refuses_completion
 test_hold_decodes_a_bare_scalar_body_without_the_nonref_default
 test_retained_body_keeps_its_utf8_bytes
 test_completion_gate_attests_and_transfers
+test_completion_survives_answer_retention
+test_archive_inventory_uses_configured_path
+test_archive_inventory_refuses_unsettled_or_missing
 test_answer_records_and_closes
 test_release_frees_held_work
 test_hold_stamp_precedes_hold_visibility

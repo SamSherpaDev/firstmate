@@ -368,8 +368,7 @@ E2E_ROOT="$E2E/root"
 E2E_HOME="$E2E/home"
 E2E_FAKEBIN="$E2E/fakebin"
 mkdir -p "$E2E_HOME/state" "$E2E_HOME/data" "$E2E_HOME/config" "$E2E_FAKEBIN"
-git init -q -b main "$E2E_ROOT"
-git -C "$E2E_ROOT" commit -q --allow-empty -m init
+fm_git_init_commit "$E2E_ROOT" || fail "could not initialize the digest fixture repository"
 
 make_hanging_tasks_axi "$E2E_FAKEBIN"
 # The reconcile sweep this half asserts on runs only under a verified fleet
