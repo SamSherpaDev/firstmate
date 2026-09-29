@@ -1,0 +1,99 @@
+$ tasks-axi add panda-model-retest Retest the panda model --kind scout --start
+  ok: added panda-model-retest (scout) -> In flight
+  task:
+    id: panda-model-retest
+    title: Retest the panda model
+    state: in_flight
+    blocked: no
+    blocked_by: none
+    held: no
+    hold_reason: "-"
+    hold_kind: "-"
+    hold_until: "-"
+    kind: scout
+    repo: "-"
+    priority: "-"
+    created: 2026-09-29
+    closed: "-"
+    deps: none
+    links: none
+    body: ""
+  help[2]:
+    - Run `tasks-axi done panda-model-retest --pr <url>` when it ships
+    - Run `tasks-axi block panda-model-retest --by <other>` to record a dependency
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/base/bin/fm-captain-hold.sh hold panda-library-proposals --title Pick library proposals --reason captain choice pending
+panda-library-proposals
+[exit 0]
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/base/bin/fm-captain-hold.sh hold panda-model-setting-lockdown --title Lock down model setting --reason captain choice pending
+panda-model-setting-lockdown
+[exit 0]
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/base/bin/fm-captain-hold.sh complete panda-model-retest panda-library-proposals panda-model-setting-lockdown
+complete: panda-model-retest captain-call inventory reviewed (panda-library-proposals,panda-model-setting-lockdown)
+[exit 0]
+--- meta after inventory:
+decisions_reviewed=1
+decision_keys=panda-library-proposals,panda-model-setting-lockdown
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/base/bin/fm-captain-hold.sh answer panda-model-setting-lockdown --decision-file /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/h-base3/lockdown.txt
+answered: panda-model-setting-lockdown
+[exit 0]
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/base/bin/fm-captain-hold.sh answer panda-library-proposals --decision-file /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/h-base3/library.txt
+answered: panda-library-proposals
+[exit 0]
+--- Done retention (keep 1 newest Done row):
+$ tasks-axi prune --keep 1
+  ok: prune done -> archived 1 (kept 1)
+  help[1]:
+    - Run `tasks-axi list --state done` to see retained Done items
+--- backlog.md Done section:
+## Done
+- [x] panda-library-proposals - Pick library proposals (repo: firstmate) (kind: captain) (done 2026-09-29) (hold: captain choice pending) (hold-kind: captain)
+  Resolution recorded by fm-captain-hold.
+  Decision digest: a3ac1cddcb9395e263e4f41bdf29ebbfd234ab620da0fdf82e3c37e031da965c
+  Resolution mode: answered
+
+  Captain decision:
+  Adopt proposals A and C.
+
+--- done-archive.md:
+
+## Archived 2026-09-29
+- [x] panda-model-setting-lockdown - Lock down model setting (repo: firstmate) (kind: captain) (done 2026-09-29) (hold: captain choice pending) (hold-kind: captain)
+  Resolution recorded by fm-captain-hold.
+  Decision digest: 4120e90ce3bf1df883a6cdc7d0f14da39e570a0dde9e9a91a1b6aa7dfe70cc30
+  Resolution mode: answered
+
+  Captain decision:
+  Lock the model setting to the retested value.
+
+$ tasks-axi show panda-model-setting-lockdown
+  error: "Task \"panda-model-setting-lockdown\" not found in this backlog"
+  code: NOT_FOUND
+  help[1]: Run `tasks-axi list` to see existing tasks
+=== THE REPORTED FAILURE PATH ===
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/base/bin/fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/h-base3/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/base/bin/fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/h-base3/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/base/bin/fm-teardown.sh panda-model-retest
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/h-base3
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/h-base3/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+REFUSED: scout task panda-model-retest has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+--- post-teardown:
+panda-model-retest.meta
+panda-model-retest.status
+$ tasks-axi show panda-model-retest
+  task:
+    id: panda-model-retest
+    title: Retest the panda model
+    state: in_flight

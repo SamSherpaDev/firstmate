@@ -1,0 +1,44 @@
+$ tasks-axi add panda-model-retest Retest the panda model --kind scout --start
+  ok: added panda-model-retest (scout) -> In flight
+## Answered call archived, then the live backlog becomes unreadable
+$ fm-captain-hold.sh hold panda-model-setting-lockdown --title Lock down model setting --reason captain choice pending
+panda-model-setting-lockdown
+[exit 0]
+$ fm-captain-hold.sh complete panda-model-retest panda-model-setting-lockdown
+complete: panda-model-retest captain-call inventory reviewed (panda-model-setting-lockdown)
+[exit 0]
+$ fm-captain-hold.sh answer panda-model-setting-lockdown --decision-file /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/adv-unreadable-backlog/answer.txt
+answered: panda-model-setting-lockdown
+[exit 0]
+$ tasks-axi prune --keep 0
+  ok: prune done -> archived 1 (kept 0)
+--- done-archive.md:
+
+## Archived 2026-09-29
+- [x] panda-model-setting-lockdown - Lock down model setting (repo: firstmate) (kind: captain) (done 2026-09-29) (hold: captain choice pending) (hold-kind: captain)
+  Resolution recorded by fm-captain-hold.
+  Decision digest: abb6c959f962a8f31ab4fe786e8a43b6cca4c514a0087dc961e8a58891590d46
+  Resolution mode: answered
+
+  Captain decision:
+  Lock it.
+
+$ tasks-axi show panda-model-setting-lockdown
+  error: "EACCES: permission denied, open '/private/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/fm-lab.vzP5QY/adv-unreadable-backlog/data/backlog.md'"
+  code: UNKNOWN
+=== guard checks (all must refuse) ===
+$ fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: cannot establish that both live identities for panda-model-setting-lockdown are absent before consulting its archive
+[exit 1]
+$ fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: cannot establish that both live identities for panda-model-setting-lockdown are absent before consulting its archive
+[exit 1]
+$ fm-teardown.sh panda-model-retest
+error: task panda-model-retest cannot be torn down because whether its backlog item is still held for the captain could not be read; fix that read and retry rather than risk closing a captain call with no recorded answer
+fm-captain-hold: error: "EACCES: permission denied, open '/private/var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T/fm-lab.vzP5QY/adv-unreadable-backlog/data/backlog.md'"
+[exit 1]
+--- scout records preserved:
+panda-model-retest.meta
+panda-model-retest.status
+$ tasks-axi show panda-model-retest
+  state: in_flight

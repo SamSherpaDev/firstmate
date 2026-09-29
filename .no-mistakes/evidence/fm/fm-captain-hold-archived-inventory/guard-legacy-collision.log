@@ -1,0 +1,51 @@
+$ tasks-axi add panda-model-retest Retest the panda model --kind scout --start
+  ok: added panda-model-retest (scout) -> In flight
+## Legacy key 'route': live panda-model-retest-decision-route is the real call; an unrelated answered task named 'route' is archived
+$ fm-captain-hold.sh hold panda-model-retest-decision-route --title Real legacy call --reason captain choice pending
+panda-model-retest-decision-route
+[exit 0]
+$ fm-captain-hold.sh complete panda-model-retest route
+complete: panda-model-retest captain-call inventory reviewed (route)
+[exit 0]
+$ fm-captain-hold.sh hold route --title Unrelated call --reason separate choice
+route
+[exit 0]
+$ fm-captain-hold.sh answer route --decision-file /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/adv-legacy-collision/answer.txt
+answered: route
+[exit 0]
+$ tasks-axi prune --keep 0
+  ok: prune done -> archived 1 (kept 0)
+--- done-archive.md:
+
+## Archived 2026-09-29
+- [x] route - Unrelated call (repo: firstmate) (kind: captain) (done 2026-09-29) (hold: separate choice) (hold-kind: captain)
+  Resolution recorded by fm-captain-hold.
+  Decision digest: abb6c959f962a8f31ab4fe786e8a43b6cca4c514a0087dc961e8a58891590d46
+  Resolution mode: answered
+
+  Captain decision:
+  Lock it.
+
+--- sanity: while the legacy call is still held, verify passes
+$ fm-captain-hold.sh verify panda-model-retest
+verified: panda-model-retest captain-call inventory
+[exit 0]
+$ tasks-axi unhold panda-model-retest-decision-route
+  ok: unhold panda-model-retest-decision-route -> cleared
+=== guard checks (all must refuse) ===
+$ fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: captain-held task panda-model-retest-decision-route is neither held for the captain nor closed with a recorded captain answer
+[exit 1]
+$ fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: captain-held task panda-model-retest-decision-route is neither held for the captain nor closed with a recorded captain answer
+[exit 1]
+$ fm-teardown.sh panda-model-retest
+fm-captain-hold: captain-held task panda-model-retest-decision-route is neither held for the captain nor closed with a recorded captain answer
+REFUSED: scout task panda-model-retest has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+--- scout records preserved:
+panda-model-retest.meta
+panda-model-retest.status
+$ tasks-axi show panda-model-retest
+  state: in_flight

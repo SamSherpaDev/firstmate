@@ -1,0 +1,44 @@
+$ tasks-axi add panda-model-retest Retest the panda model --kind scout --start
+  ok: added panda-model-retest (scout) -> In flight
+## An answered call archived, then a new UNHELD live task reuses the same id
+$ fm-captain-hold.sh hold panda-model-setting-lockdown --title Lock down model setting --reason captain choice pending
+panda-model-setting-lockdown
+[exit 0]
+$ fm-captain-hold.sh complete panda-model-retest panda-model-setting-lockdown
+complete: panda-model-retest captain-call inventory reviewed (panda-model-setting-lockdown)
+[exit 0]
+$ fm-captain-hold.sh answer panda-model-setting-lockdown --decision-file /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/adv-recreated-live/answer.txt
+answered: panda-model-setting-lockdown
+[exit 0]
+$ tasks-axi prune --keep 0
+  ok: prune done -> archived 1 (kept 0)
+--- done-archive.md:
+
+## Archived 2026-09-29
+- [x] panda-model-setting-lockdown - Lock down model setting (repo: firstmate) (kind: captain) (done 2026-09-29) (hold: captain choice pending) (hold-kind: captain)
+  Resolution recorded by fm-captain-hold.
+  Decision digest: abb6c959f962a8f31ab4fe786e8a43b6cca4c514a0087dc961e8a58891590d46
+  Resolution mode: answered
+
+  Captain decision:
+  Lock it.
+
+$ tasks-axi add panda-model-setting-lockdown New unrelated unheld task
+  ok: added panda-model-setting-lockdown -> Queued
+=== guard checks (all must refuse) ===
+$ fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: captain-held task panda-model-setting-lockdown is neither held for the captain nor closed with a recorded captain answer
+[exit 1]
+$ fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: captain-held task panda-model-setting-lockdown is neither held for the captain nor closed with a recorded captain answer
+[exit 1]
+$ fm-teardown.sh panda-model-retest
+fm-captain-hold: captain-held task panda-model-setting-lockdown is neither held for the captain nor closed with a recorded captain answer
+REFUSED: scout task panda-model-retest has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+--- scout records preserved:
+panda-model-retest.meta
+panda-model-retest.status
+$ tasks-axi show panda-model-retest
+  state: in_flight

@@ -1,0 +1,35 @@
+$ tasks-axi add panda-model-retest Retest the panda model --kind scout --start
+  ok: added panda-model-retest (scout) -> In flight
+## A captain call closed by a bare tasks-axi done (no recorded answer), then archived
+$ fm-captain-hold.sh hold panda-model-setting-lockdown --title Lock down model setting --reason captain choice pending
+panda-model-setting-lockdown
+[exit 0]
+$ fm-captain-hold.sh complete panda-model-retest panda-model-setting-lockdown
+complete: panda-model-retest captain-call inventory reviewed (panda-model-setting-lockdown)
+[exit 0]
+$ tasks-axi done panda-model-setting-lockdown
+  ok: done panda-model-setting-lockdown -> Done
+$ tasks-axi prune --keep 0
+  ok: prune done -> archived 1 (kept 0)
+--- done-archive.md:
+
+## Archived 2026-09-29
+- [x] panda-model-setting-lockdown - Lock down model setting (repo: firstmate) (kind: captain) (done 2026-09-29) (hold: captain choice pending) (hold-kind: captain)
+  Captain hold set: 2026-09-29T08:40:19Z
+=== guard checks (all must refuse) ===
+$ fm-captain-hold.sh verify panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/adv-unanswered-archive/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ fm-captain-hold.sh complete panda-model-retest --none
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/adv-unanswered-archive/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+[exit 1]
+$ fm-teardown.sh panda-model-retest
+fm-captain-hold: no captain-held task panda-model-setting-lockdown and no migrated hold for it in this home's configured backlog (data directory /var/folders/r4/lj5nyr393lv0s3j7ltth6dxc0000gn/T//fm-lab.vzP5QY/adv-unanswered-archive/data); the nearest legacy identity panda-model-retest-decision-panda-model-setting-lockdown also resolves to nothing
+REFUSED: scout task panda-model-retest has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+--- scout records preserved:
+panda-model-retest.meta
+panda-model-retest.status
+$ tasks-axi show panda-model-retest
+  state: in_flight
