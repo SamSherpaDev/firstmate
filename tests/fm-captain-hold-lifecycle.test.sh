@@ -929,7 +929,7 @@ test_completion_survives_answer_retention() {
 }
 
 test_archive_inventory_uses_configured_path() {
-  local shape home archive data
+  local shape home archive data unreadable
   for shape in default relative absolute user relocated; do
     (
       home=$(make_home "archive-path-$shape")
@@ -978,15 +978,18 @@ test_archive_inventory_uses_configured_path() {
         cat > "$home/fakebin/tasks-axi" <<'SH'
 #!/usr/bin/env bash
 case "$*" in
-  'show sample-path-call '*) printf 'code: VALIDATION_ERROR\n'; exit 1 ;;
+  "show ${FM_TEST_ARCHIVE_UNREADABLE_ID:-sample-path-call} "*) printf 'code: VALIDATION_ERROR\n'; exit 1 ;;
 esac
 exec "$REAL_TASKS_AXI" "$@"
 SH
         chmod +x "$home/fakebin/tasks-axi"
-        if run_captain "$home" verify sample-path-review > "$home/unreadable.out" 2>&1; then
-          fail "archive supplied settlement while the live backlog could not be read"
-        fi
-        assert_grep 'cannot establish' "$home/unreadable.out" "unreadable backlog was treated as absence"
+        for unreadable in sample-path-call sample-path-review-decision-sample-path-call; do
+          if FM_TEST_ARCHIVE_UNREADABLE_ID="$unreadable" run_captain "$home" verify sample-path-review \
+            > "$home/unreadable.out" 2>&1; then
+            fail "archive supplied settlement while live identity $unreadable could not be read"
+          fi
+          assert_grep 'cannot establish' "$home/unreadable.out" "unreadable backlog was treated as absence"
+        done
       fi
       # A newly created live id must not inherit an old archived resolution.
       (cd "${data%/*}" && tasks-axi add sample-path-call "New unheld task" \
@@ -998,6 +1001,52 @@ SH
     ) || fail "archive addressing case failed: $shape"
   done
   pass "inventory uses default, configured, inherited and relocated archives without shadowing live tasks"
+}
+
+# A legacy short key may have two identities. An unrelated archived exact id
+# must not hide the live origin-derived call that the inventory used to name.
+test_archive_collision_preserves_live_legacy_call() {
+  local home id call state
+  for state in unheld unanswered; do
+    home=$(make_home "archive-collision-$state")
+    id=sample-collision-review
+    call="$id-decision-route"
+    mkdir -p "$home/data/$id"
+    tasks_in "$home" add "$id" "Review legacy collision" --kind scout --start >/dev/null \
+      || fail "could not create collision origin"
+    write_origin_meta "$home" "$id"
+    printf 'done: report complete\n' > "$home/state/$id.status"
+    printf '# Collision review\n' > "$home/data/$id/report.md"
+    run_captain "$home" hold "$call" --title "Real legacy call" --reason "choice pending" >/dev/null \
+      || fail "could not create live legacy call"
+    run_captain "$home" complete "$id" route >/dev/null || fail "could not inventory legacy call"
+    run_captain "$home" hold route --title "Unrelated exact-id call" --reason "separate choice" >/dev/null \
+      || fail "could not create unrelated call"
+    printf 'Use the unrelated option.\n' > "$home/answer.txt"
+    run_captain "$home" answer route --decision-file "$home/answer.txt" >/dev/null \
+      || fail "could not answer unrelated call"
+    tasks_in "$home" prune --keep 0 >/dev/null || fail "could not archive unrelated call"
+    run_captain "$home" verify "$id" >/dev/null || fail "durable held legacy call should remain valid"
+    case "$state" in
+      unheld) tasks_in "$home" unhold "$call" >/dev/null || fail "could not unhold legacy call" ;;
+      unanswered) tasks_in "$home" "done" "$call" >/dev/null || fail "could not close unanswered call" ;;
+    esac
+    if run_captain "$home" verify "$id" > "$home/verify.out" 2>&1; then
+      fail "archived exact id masked $state live legacy call during verify"
+    fi
+    if run_captain "$home" complete "$id" --none > "$home/complete.out" 2>&1; then
+      fail "archived exact id masked $state live legacy call during complete"
+    fi
+    if run_teardown "$home" "$id" > "$home/teardown.out" 2>&1; then
+      fail "archived exact id masked $state live legacy call during teardown"
+    fi
+    [ -f "$home/state/$id.meta" ] || fail "refused cleanup removed the origin metadata"
+    # Exact live task ids still win over legacy fallback, as before this fix.
+    run_captain "$home" hold route --title "Current exact-id call" --reason "new choice" >/dev/null \
+      || fail "could not create current exact-id call"
+    run_captain "$home" verify "$id" >/dev/null || fail "live exact-id precedence changed"
+  done
+  pass "live legacy calls take precedence over archived exact ids without changing live exact-id precedence"
 }
 
 # A missing row is not automatically settled: unchecked archived rows and a
@@ -4196,6 +4245,7 @@ test_retained_body_keeps_its_utf8_bytes
 test_completion_gate_attests_and_transfers
 test_completion_survives_answer_retention
 test_archive_inventory_uses_configured_path
+test_archive_collision_preserves_live_legacy_call
 test_archive_inventory_refuses_unsettled_or_missing
 test_answer_records_and_closes
 test_release_frees_held_work

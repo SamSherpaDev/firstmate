@@ -147,7 +147,8 @@
 # retention archive row, provided that checked row retains a resolution record.
 # The configured tasks-axi archive (or done-archive.md beside the backlog) is
 # authoritative; note archives and report mentions are not settlement evidence.
-# A live task always takes precedence over an archived copy of the same id.
+# Both live identities (exact id, then legacy derived id) take precedence over
+# either archived identity, so an unrelated archived short key cannot hide a call.
 # Metadata compatibility: the attestation keeps the historical
 # `decisions_reviewed=1` and `decision_keys=` keys, and an inventory entry that
 # names no existing task resolves through the legacy `<origin>-decision-<entry>`
@@ -537,15 +538,17 @@ verify_hold_durable() {  # <task-id>
 # under an `Archived` heading, not a normal backlog section. Read only that
 # exact row, never a mention in another task or the superseded note archive.
 # This evidence is for the completion gate alone, not the keyed-answer intake.
-archived_hold_durable() {  # <task-id>; returns 1 when no settled archive row exists
-  local id=$1 data root backend archive body
+archived_hold_durable() {  # <task-id> <exact-miss-output> <legacy-miss-output>
+  local id=$1 exact_miss=$2 legacy_miss=$3 data root backend archive body missing
   data=$(fm_backlog_data_absolute "$DATA") || fail "data directory cannot be resolved: $DATA"
   root=$(fm_backlog_root "$data") || fail "$FM_BACKLOG_TRANSITION_ERROR"
   backend=$(fm_tasks_axi_backend "$root") || fail "cannot resolve backlog backend"
   [ "$backend" = markdown ] || return 1
   # An unreadable live backlog is not proof that the id was retained away.
-  printf '%s\n' "$TASK_SHOW_OUTPUT" | grep -qx 'code: NOT_FOUND' \
-    || fail "cannot establish that $id is absent from the live backlog before consulting its archive"
+  for missing in "$exact_miss" "$legacy_miss"; do
+    printf '%s\n' "$missing" | grep -qx 'code: NOT_FOUND' \
+      || fail "cannot establish that both live identities for $id are absent before consulting its archive"
+  done
   # Match tasks-axi's archive precedence: project config, user config, then
   # done-archive.md beside the explicitly addressed backlog. Relative configured
   # paths resolve from the backlog root, including with FM_DATA_OVERRIDE.
@@ -797,26 +800,30 @@ resolve_migrated_entry() {  # <origin-or-empty> <entry>
 # Resolve one inventory entry or channel key to the task that carries it: the
 # exact task id when it exists, else the legacy derived identity, else - on the
 # beads backend - the migrated row the markdown-to-beads hold migration wrote.
-# Inventory callers also permit archived settlement evidence after a live-id
-# miss. Prints "<resolved id> <how>", where <how> is exact, legacy, archived,
+# Inventory callers also permit archived settlement evidence after both live
+# identities miss. Prints "<resolved id> <how>", where <how> is exact, legacy, archived,
 # migrated-note or migrated-prefix, so the attestation keeps its evidence type.
 resolve_entry() {  # <origin-or-empty> <entry> [inventory-0-or-1]; prints "<id> <how>" or fails
-  local origin=$1 entry=$2 inventory=${3:-0} legacy migrated rc
+  local origin=$1 entry=$2 inventory=${3:-0} legacy='' migrated rc exact_miss legacy_miss
   if task_show "$entry"; then
     printf '%s exact' "$entry"
     return 0
   fi
-  if [ "$inventory" = 1 ] && archived_hold_durable "$entry"; then
-    printf '%s archived' "$entry"
-    return 0
-  fi
+  exact_miss=$TASK_SHOW_OUTPUT
   if [ -n "$origin" ] && [ "$origin" != "$BINDING_ANY" ]; then
     legacy=$(legacy_hold_id "$origin" "$entry")
     if task_show "$legacy"; then
       printf '%s legacy' "$legacy"
       return 0
     fi
-    if [ "$inventory" = 1 ] && archived_hold_durable "$legacy"; then
+  fi
+  legacy_miss=$TASK_SHOW_OUTPUT
+  if [ "$inventory" = 1 ]; then
+    if archived_hold_durable "$entry" "$exact_miss" "$legacy_miss"; then
+      printf '%s archived' "$entry"
+      return 0
+    fi
+    if [ -n "$legacy" ] && archived_hold_durable "$legacy" "$exact_miss" "$legacy_miss"; then
       printf '%s archived' "$legacy"
       return 0
     fi
